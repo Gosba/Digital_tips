@@ -7,10 +7,10 @@ BOT_TOKEN_DT = os.getenv("TELEGRAM_BOT_TOKEN_DT", "8649075315:AAHQPM56RFKUIXkiFT
 # Obtenez votre clé gratuite sur https://aistudio.google.com/
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyB_aFXWXmYI-wvWny_bqgOulYgtoP9_RG8")
 
-# ── Sources d'actualités (Exemples de flux RSS) ───────────────────────────────
-# Vous pouvez en ajouter d'autres ici
+# ── Sources d'actualités (Flux RSS FR Spécialisés Pédagogie) ────────────────
 NEWS_SOURCES = [
-    {"nom": "TechCrunch (IA)", "url": "https://techcrunch.com/category/artificial-intelligence/feed/"},
-    {"nom": "The Verge (AI)", "url": "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml"},
-    {"nom": "CNIL (Législation)", "url": "https://www.cnil.fr/fr/flux-rss.xml"}
+    {"nom": "Thot Cursus (Pédagogie)", "url": "https://cursus.edu/fr/rss"},
+    {"nom": "Apprendre Demain (IA & Edu)", "url": "https://apprendredemain.fr/feed/"},
+    {"nom": "EdTech Actu", "url": "https://edtechactu.com/feed/"},
+    {"nom": "CNIL Éducation", "url": "https://www.cnil.fr/fr/flux-rss.xml"}
 ]
