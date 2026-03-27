@@ -25,8 +25,17 @@ def save_user(cid):
 
 async def start(u, c):
     save_user(u.effective_user.id)
-    txt = "🎓 <b>Digital Tips - Édition Pédagogie</b>\n\nVotre veille sur l'IA pour les formateurs et enseignants.\nExplorez le catalogue :"
-    kb = [["📰 Actualités IA", "🛠️ Outils Gratuits"], ["💼 Pépites par Métier", "❓ À propos"]]
+    txt = (
+        "🎓 <b>Digital Tips - Assistant Pédagogie & IA</b>\n\n"
+        "Bienvenue ! Je vous accompagne pour intégrer l'IA dans vos cours et formations.\n\n"
+        "🚀 <b>Au programme :</b>\n"
+        "• Veille EdTech quotidienne\n"
+        "• Catalogue d'outils premium (ex: Diffit, MagicSchool)\n"
+        "• Conseils pour gagner du temps\n"
+        "• Flash IA tous les matins à 08h00 !\n\n"
+        "Explorez mon menu ci-dessous :"
+    )
+    kb = [["📰 Actualités IA", "🛠️ Outils Gratuits"], ["💼 Pépites Pédago", "❓ À propos"]]
     await u.message.reply_html(txt, reply_markup=ReplyKeyboardMarkup(kb, resize_keyboard=True))
 
 async def news_handler(u, c):
