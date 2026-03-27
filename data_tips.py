@@ -1,6 +1,7 @@
 """
 Catalogue des pépites IA et outils gratuits.
 """
+
 TOOLS = {
     "Texte 🖋️": [
         {"nom": "Claude.ai", "desc": "Incroyable pour la réflexion et le code", "url": "https://claude.ai"},
@@ -23,11 +24,13 @@ TOOLS = {
         {"nom": "ElevenLabs", "desc": "La meilleure synthèse vocale au monde", "url": "https://elevenlabs.io"}
     ]
 }
+
 LEGISTLATION = {
     "Régulation EU 🇪🇺": "L'IA Act européen est entré en vigueur. Il classe les IA par niveau de risque.",
     "Biais & Éthique 🧠": "Attention aux hallucinations des modèles, toujours vérifier les sources critiques.",
     "Protection Données 🔒": "Évitez d'envoyer des données confidentielles (client, finance) dans les versions gratuites non-privées de ChatGPT.",
 }
+
 ROLES_TIPS = {
     "RH / Recrutement 👤": "L'IA peut trier les CV et simuler des entretiens pour entraîner vos managers.",
     "Finance / Compta 📊": "Rows.com est un tableur dopé à l'IA pour analyser vos données automatiquement.",
