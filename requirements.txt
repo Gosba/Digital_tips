@@ -1,5 +1,7 @@
-python-telegram-bot[job-queue]==21.10
-feedparser==6.0.11
-google-generativeai==0.8.3
-newspaper3k==0.2.8
-lxml_html_clean==0.1.1
+python-telegram-bot==21.10
+gspread==6.2.1
+google-api-python-client==2.112.0
+google-auth==2.25.0
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.1.1
+pytz
