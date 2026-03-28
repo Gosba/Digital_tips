@@ -5,15 +5,12 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 from config import BOT_TOKEN_DT, NEWS_SOURCES, GEMINI_API_KEY
 from data_tips import TOOLS, LEGISTLATION, ROLES_TIPS
 from datetime import time, datetime, timedelta
-
 # --- LOGS ET INIT ---
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 USER_FILE = "users_dt.json"
-
 # --- UTILITAIRES ---
 def is_relevant(title, summary=""):
     """Vérification intelligente de la pertinence de l'article via IA (Filtre Laser)."""
@@ -25,19 +22,16 @@ def is_relevant(title, summary=""):
     except Exception as e:
         logger.error(f"Erreur filtre IA : {e}")
         return True # Sécurité : laisse passer si l'IA sature
-
 def load_users():
     if not os.path.exists(USER_FILE): return []
     try:
         with open(USER_FILE, "r") as f: return json.load(f)
     except: return []
-
 def save_user(cid):
     users = load_users()
     if cid not in users:
         users.append(cid)
         with open(USER_FILE, "w") as f: json.dump(users, f)
-
 # --- HANDLERS NAVIGATION ---
 async def start(update, context):
     save_user(update.effective_user.id)
@@ -48,7 +42,6 @@ async def start(update, context):
     )
     kb = [["📰 Actualités Sélectionnées", "🛠️ Outils Gratuits"], ["💼 Pépites Pédago", "❓ À propos"]]
     await update.message.reply_html(txt, reply_markup=ReplyKeyboardMarkup(kb, resize_keyboard=True))
-
 async def news_handler(update, context):
     msg = update.callback_query.message if update.callback_query else update.message
     user_name = update.effective_user.first_name
@@ -59,7 +52,6 @@ async def news_handler(update, context):
     seen_links = set()
     now = datetime.now(pytz.UTC)
     threshold = now - timedelta(hours=48)
-
     for s in NEWS_SOURCES:
         logger.info(f"📡 [NEWS] Scraping source : {s['nom']}")
         try:
@@ -88,11 +80,9 @@ async def news_handler(update, context):
             logger.info(f"✅ [NEWS] {count_source} articles frais trouvés sur {s['nom']}")
         except Exception as e:
             logger.error(f"❌ [NEWS] Erreur sur {s['nom']}: {e}")
-
     logger.info(f"📊 [NEWS] Total articles à analyser par l'IA : {len(all_articles)}")
     # Tri par date (plus récent en premier)
     all_articles.sort(key=lambda x: x["date"], reverse=True)
-
     # 5. Filtrage IA et Affichage (Limit 5)
     found = 0
     for art in all_articles:
@@ -102,10 +92,8 @@ async def news_handler(update, context):
             await msg.reply_html(t, disable_web_page_preview=True)
             found += 1
             if found >= 5: break
-
     if found == 0:
         await msg.reply_text("🕵️‍♂️ Aucune news fraîche (-48h) n'a passé le filtre IA aujourd'hui.")
-
 # --- NAVIGATION FLUIDE (EDIT MESSAGE) ---
 async def roles_handler(update, context):
     is_cb = update.callback_query is not None
@@ -114,7 +102,6 @@ async def roles_handler(update, context):
     t = "💼 <b>Conseils par métier :</b>"
     if is_cb: await msg.edit_text(t, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(kb))
     else: await msg.reply_html(t, reply_markup=InlineKeyboardMarkup(kb))
-
 async def tools_handler(update, context):
     is_cb = update.callback_query is not None
     msg = update.callback_query.message if is_cb else update.message
@@ -122,20 +109,17 @@ async def tools_handler(update, context):
     t = "🛠️ <b>Outils IA Gratuits :</b>"
     if is_cb: await msg.edit_text(t, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(kb))
     else: await msg.reply_html(t, reply_markup=InlineKeyboardMarkup(kb))
-
 async def role_callback(update, context):
     q = update.callback_query; await q.answer(); rn = q.data.replace("role_", "")
     if rn == "back": return await roles_handler(update, context)
     kb = [[InlineKeyboardButton("⬅️ Retour", callback_data="role_back")]]
     await q.edit_message_text(f"👔 <b>{rn} :</b>\n\n{ROLES_TIPS.get(rn, '...')}", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(kb))
-
 async def category_callback(update, context):
     q = update.callback_query; await q.answer(); cn = q.data.replace("cat_", "")
     if cn == "back": return await tools_handler(update, context)
     m = f"<b>{cn}</b>\n\n" + "\n".join([f"✨ <b>{o['nom']}</b>\n{o['desc']}\n🔗 <a href='{o['url']}'>Lien</a>\n" for o in TOOLS.get(cn, [])])
     kb = [[InlineKeyboardButton("⬅️ Retour", callback_data="cat_back")]]
     await q.edit_message_text(m, parse_mode="HTML", disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup(kb))
-
 # --- BRIEFING MATIN AUTOMATIQUE ---
 async def morning_brief(context):
     ids = load_users()
@@ -150,7 +134,6 @@ async def morning_brief(context):
                     except: pass
                 break # On n'envoie qu'une news par brief
     except: pass
-
 # --- MAIN ---
 def main():
     app = Application.builder().token(BOT_TOKEN_DT).build()
@@ -171,5 +154,4 @@ def main():
     print("🚀 --- BOT DIGITAL TIPS V2 (FILTRE IA LASER) PRÊT ! ---")
     logger.info("🤖 Bot démarré avec la logique de fraîcheur 48h.")
     app.run_polling()
-
 if __name__ == "__main__": main()
