@@ -17,3 +17,10 @@ NEWS_SOURCES = [
     {"nom": "CNIL Éducation", "url": "https://www.cnil.fr/fr/flux-rss.xml"}
 ]
 
+# ── Sources Vidéos (Filtre 6 mois par défaut) ───────────────────────────────
+YOUTUBE_CHANNELS = [
+    {"nom": "ÊtreProf", "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCFYx4sp35cCIC9Yi_ft_hwA"},
+    {"nom": "Académie Aix-Marseille", "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC2G2rJCaqo1wbb_84r0UiXQ"},
+    {"nom": "Philippe Meirieu", "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCopiwrmPgBWEsDRZ6JiYLqw"}
+]
+
