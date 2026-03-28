@@ -4,7 +4,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKe
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
 from config import BOT_TOKEN_DT, NEWS_SOURCES, GEMINI_API_KEY
 from data_tips import TOOLS, LEGISTLATION, ROLES_TIPS
-from datetime import time
+from datetime import time, datetime, timedelta
 
 # --- LOGS ET INIT ---
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -16,15 +16,15 @@ USER_FILE = "users_dt.json"
 
 # --- UTILITAIRES ---
 def is_relevant(title, summary=""):
-    """Vérification intelligente de la pertinence de l'article via IA."""
-    p = f"Répond par OUI ou NON uniquement. Cet article est-il utile pour un formateur ou enseignant utilisant l'IA ? Titre : {title} / Résumé : {summary}"
+    """Vérification intelligente de la pertinence de l'article via IA (Filtre Laser)."""
+    p = f"Analyste EdTech : Répond par 'OUI' ou 'NON' uniquement. Cet article traite-t-il d'innovation pédagogique, d'IA en classe ou d'outils numériques pour l'éducation ? REJETTE ALORS : politique générale, faits divers, violence, sport. Titre : {title} / Résumé : {summary}"
     try:
         res = model.generate_content(p).text.strip().upper()
         logger.info(f"Filtre IA : {title[:30]}... | Pertinence : {res}")
         return "OUI" in res
     except Exception as e:
         logger.error(f"Erreur filtre IA : {e}")
-        return True # On laisse passer si l'IA bug par précaution !
+        return True # Sécurité : laisse passer si l'IA sature
 
 def load_users():
     if not os.path.exists(USER_FILE): return []
@@ -51,21 +51,60 @@ async def start(update, context):
 
 async def news_handler(update, context):
     msg = update.callback_query.message if update.callback_query else update.message
+    user_name = update.effective_user.first_name
+    logger.info(f"🔍 [NEWS] Requête lancée par {user_name}")
     await msg.reply_chat_action("typing")
-    found = 0
+    
+    all_articles = []
+    seen_links = set()
+    now = datetime.now(pytz.UTC)
+    threshold = now - timedelta(hours=48)
+
     for s in NEWS_SOURCES:
+        logger.info(f"📡 [NEWS] Scraping source : {s['nom']}")
         try:
             feed = feedparser.parse(s["url"])
-            if feed.entries:
-                for e in feed.entries[:3]:
-                    if is_relevant(e.title, getattr(e, "summary", "")):
-                        t = f"<b>{s['nom']}</b>\n🔹 <a href='{e.link}'>{e.title}</a>"
-                        await msg.reply_html(t, disable_web_page_preview=True)
-                        found += 1
-                        if found >= 3: break
-        except: pass
-        if found >= 3: break
-    if found == 0: await msg.reply_text("🕵️‍♂️ Aucune news pertinente trouvée ce jour.")
+            count_source = 0
+            for e in feed.entries:
+                if e.link in seen_links: continue
+                
+                published = None
+                if hasattr(e, "published_parsed") and e.published_parsed:
+                    published = datetime(*e.published_parsed[:6], tzinfo=pytz.UTC)
+                elif hasattr(e, "updated_parsed") and e.updated_parsed:
+                    published = datetime(*e.updated_parsed[:6], tzinfo=pytz.UTC)
+                
+                if published and published < threshold: continue
+                
+                all_articles.append({
+                    "title": e.title,
+                    "link": e.link,
+                    "summary": getattr(e, "summary", ""),
+                    "source": s["nom"],
+                    "date": published or now
+                })
+                seen_links.add(e.link)
+                count_source += 1
+            logger.info(f"✅ [NEWS] {count_source} articles frais trouvés sur {s['nom']}")
+        except Exception as e:
+            logger.error(f"❌ [NEWS] Erreur sur {s['nom']}: {e}")
+
+    logger.info(f"📊 [NEWS] Total articles à analyser par l'IA : {len(all_articles)}")
+    # Tri par date (plus récent en premier)
+    all_articles.sort(key=lambda x: x["date"], reverse=True)
+
+    # 5. Filtrage IA et Affichage (Limit 5)
+    found = 0
+    for art in all_articles:
+        if is_relevant(art["title"], art["summary"]):
+            d_str = art["date"].strftime("%d/%m %H:%M")
+            t = f"📅 <b>{d_str}</b> | <b>{art['source']}</b>\n🔹 <a href='{art['link']}'>{art['title']}</a>"
+            await msg.reply_html(t, disable_web_page_preview=True)
+            found += 1
+            if found >= 5: break
+
+    if found == 0:
+        await msg.reply_text("🕵️‍♂️ Aucune news fraîche (-48h) n'a passé le filtre IA aujourd'hui.")
 
 # --- NAVIGATION FLUIDE (EDIT MESSAGE) ---
 async def roles_handler(update, context):
@@ -129,7 +168,8 @@ def main():
     app.add_handler(CallbackQueryHandler(lambda u,c: tools_handler(u,c), pattern="^cat_back"))
     app.add_handler(CallbackQueryHandler(lambda u,c: roles_handler(u,c), pattern="^role_back"))
     
-    print("🚀 Bot Digital Tips PRÊT !")
+    print("🚀 --- BOT DIGITAL TIPS V2 (FILTRE IA LASER) PRÊT ! ---")
+    logger.info("🤖 Bot démarré avec la logique de fraîcheur 48h.")
     app.run_polling()
 
 if __name__ == "__main__": main()

@@ -9,8 +9,11 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyB_aFXWXmYI-wvWny_bqgOulYgtoP
 
 # ── Sources d'actualités (Flux RSS FR Spécialisés Pédagogie) ────────────────
 NEWS_SOURCES = [
+    {"nom": "IA Pulse (Substack)", "url": "https://iapulse.substack.com/feed"},
     {"nom": "Thot Cursus (Pédagogie)", "url": "https://cursus.edu/fr/rss"},
     {"nom": "Apprendre Demain (IA & Edu)", "url": "https://apprendredemain.fr/feed/"},
+    {"nom": "Café Pédagogique", "url": "https://www.cafepedagogique.net/feed/"},
     {"nom": "EdTech Actu", "url": "https://edtechactu.com/feed/"},
     {"nom": "CNIL Éducation", "url": "https://www.cnil.fr/fr/flux-rss.xml"}
 ]
+
