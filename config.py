@@ -24,14 +24,24 @@ YOUTUBE_CHANNELS = [
     {"nom": "Philippe Meirieu", "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCopiwrmPgBWEsDRZ6JiYLqw"}
 ]
 
-# ── Sélection Guides & Tutoriels IA (Recherche Spécifique) ──────────────────
-GUIDE_VIDEOS = [
-    {"titre": "PROFS : 3 Prompts qui peuvent VRAIMENT faire progresser vos élèves !", "url": "https://www.youtube.com/watch?v=r3-jU5Fnzm0"},
-    {"titre": "IA à l’école : Guide pratique pour enseignants", "url": "https://www.youtube.com/watch?v=Cbr0Iw8iEm0"},
-    {"titre": "Machine Learning et IA : Guide Simple pour Formateurs", "url": "https://www.youtube.com/watch?v=lwId4AH1mUA"},
-    {"titre": "Dinobot : Tutoriel Complet pour Enseignants", "url": "https://www.youtube.com/watch?v=Rf-2xcxS0g8"},
-    {"titre": "Comment mieux utiliser l’IA quand on est enseignant ?", "url": "https://www.youtube.com/watch?v=yh3CiGEay_Y"},
-    {"titre": "Maîtriser l’IA pour Votre Classe : Le guide pratique du prompting", "url": "https://www.youtube.com/watch?v=YxdhDd8auos"},
-    {"titre": "Canva Éducation : le guide complet pour enseignants", "url": "https://www.youtube.com/watch?v=gAJaYs6QnJc"}
-]
+# ── Base de Ressources Pédagogiques (Pépites) ──────────────────────────────
+RESSOURCES_PEDAGO = {
+    "Vidéos & Formations": [
+        {"titre": "PROFS : 3 Prompts Stratégiques", "url": "https://www.youtube.com/watch?v=r3-jU5Fnzm0"},
+        {"titre": "IA à l’école : Guide Ludovic Nedelec", "url": "https://www.youtube.com/watch?v=Cbr0Iw8iEm0"},
+        {"titre": "Prompting Efficace pour sa classe", "url": "https://www.youtube.com/watch?v=YxdhDd8auos"},
+        {"titre": "Tutoriel complet Dinobot (IA Prof)", "url": "https://www.youtube.com/watch?v=Rf-2xcxS0g8"},
+        {"titre": "Canva Éducation : Guide Complet", "url": "https://www.youtube.com/watch?v=gAJaYs6QnJc"}
+    ],
+    "Guides & Fiches": [
+        {"titre": "📑 Guide PIX : L'essentiel sur l'IA", "url": "https://pix.fr/actualites/intelligence-artificielle-guide-pedagogique"},
+        {"titre": "📂 Fiches 'IA pour Profs' (Académie)", "url": "https://www.pedagogie.ac-aix-marseille.fr/jcms/c_11186415/fr/intelligence-artificielle"},
+        {"titre": "📝 Stratégies de Prompting (Alloprof)", "url": "https://www.alloprof.qc.ca/fr/enseignants/ia-pedagogie"}
+    ],
+    "Outils Incontournables": [
+        {"titre": "🪄 MagicSchool.ai (Assistant complet)", "url": "https://www.magicschool.ai/"},
+        {"titre": "✍️ Eduaide.ai (Générateur de cours)", "url": "https://www.eduaide.ai/"},
+        {"titre": "🔍 Diffit (Différenciation facile)", "url": "https://www.diffit.me/"}
+    ]
+}
 
