@@ -123,6 +123,15 @@ async def resource_category_callback(update, context):
     kb = [[InlineKeyboardButton("⬅️ Retour", callback_data="pepites_back")]]
     await q.edit_message_text(m, parse_mode="HTML", disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup(kb))
 
+async def tools_handler(update, context):
+    """Affiche le menu des outils IA."""
+    is_cb = update.callback_query is not None
+    msg = update.callback_query.message if is_cb else update.message
+    kb = [[InlineKeyboardButton(cat, callback_data=f"cat_{cat}")] for cat in TOOLS.keys()]
+    t = "🛠️ <b>Outils IA Gratuits :</b>"
+    if is_cb: await msg.edit_text(t, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(kb))
+    else: await msg.reply_html(t, reply_markup=InlineKeyboardMarkup(kb))
+
 async def category_callback(update, context):
     q = update.callback_query; await q.answer(); cn = q.data.replace("cat_", "")
     if cn == "back": return await tools_handler(update, context)
