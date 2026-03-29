@@ -2,7 +2,7 @@ import logging, json, os, hashlib, feedparser, pytz
 import google.generativeai as genai
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
-from config import BOT_TOKEN_DT, NEWS_SOURCES, GEMINI_API_KEY, YOUTUBE_CHANNELS
+from config import BOT_TOKEN_DT, NEWS_SOURCES, GEMINI_API_KEY, YOUTUBE_CHANNELS, GUIDE_VIDEOS
 from data_tips import TOOLS, LEGISTLATION, ROLES_TIPS
 from datetime import time, datetime, timedelta
 
@@ -112,11 +112,22 @@ async def pepites_handler(update, context):
     msg = update.callback_query.message if is_cb else update.message
     kb = [
         [InlineKeyboardButton("👔 Conseils par métier", callback_data="pepites_roles")],
-        [InlineKeyboardButton("📺 Vidéos Inspirantes", callback_data="pepites_videos")]
+        [InlineKeyboardButton("📺 Vidéos Inspirantes", callback_data="pepites_videos")],
+        [InlineKeyboardButton("📘 Guides & Tutoriels IA", callback_data="pepites_guides")]
     ]
     t = "💼 <b>Pépites Pédago</b>\n\nQue souhaitez-vous explorer aujourd'hui ?"
     if is_cb: await msg.edit_text(t, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(kb))
     else: await msg.reply_html(t, reply_markup=InlineKeyboardMarkup(kb))
+
+async def guides_handler(update, context):
+    """Affiche la sélection de guides et tutoriels IA."""
+    q = update.callback_query; await q.answer()
+    m = "📘 <b>Guides & Tutoriels IA</b>\n<i>Sélection de vidéos parues il y a moins d'un an</i>\n\n"
+    for v in GUIDE_VIDEOS:
+        m += f"✨ {v['titre']}\n🔗 <a href='{v['url']}'>Regarder la vidéo</a>\n\n"
+    
+    kb = [[InlineKeyboardButton("⬅️ Retour", callback_data="pepites_back")]]
+    await q.edit_message_text(m, parse_mode="HTML", disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup(kb))
 
 async def videos_handler(update, context):
     """Récupère les dernières vidéos YouTube (< 6 mois) validées par l'IA."""
@@ -229,6 +240,7 @@ def main():
     # Callback Pépites
     app.add_handler(CallbackQueryHandler(lambda u,c: roles_handler(u,c), pattern="^pepites_roles$"))
     app.add_handler(CallbackQueryHandler(videos_handler, pattern="^pepites_videos$"))
+    app.add_handler(CallbackQueryHandler(guides_handler, pattern="^pepites_guides$"))
     app.add_handler(CallbackQueryHandler(pepites_handler, pattern="^pepites_back$"))
     
     # Correction Back Buttons Outils

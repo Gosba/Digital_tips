@@ -24,3 +24,14 @@ YOUTUBE_CHANNELS = [
     {"nom": "Philippe Meirieu", "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCopiwrmPgBWEsDRZ6JiYLqw"}
 ]
 
+# ── Sélection Guides & Tutoriels IA (Recherche Spécifique) ──────────────────
+GUIDE_VIDEOS = [
+    {"titre": "PROFS : 3 Prompts qui peuvent VRAIMENT faire progresser vos élèves !", "url": "https://www.youtube.com/watch?v=r3-jU5Fnzm0"},
+    {"titre": "IA à l’école : Guide pratique pour enseignants", "url": "https://www.youtube.com/watch?v=Cbr0Iw8iEm0"},
+    {"titre": "Machine Learning et IA : Guide Simple pour Formateurs", "url": "https://www.youtube.com/watch?v=lwId4AH1mUA"},
+    {"titre": "Dinobot : Tutoriel Complet pour Enseignants", "url": "https://www.youtube.com/watch?v=Rf-2xcxS0g8"},
+    {"titre": "Comment mieux utiliser l’IA quand on est enseignant ?", "url": "https://www.youtube.com/watch?v=yh3CiGEay_Y"},
+    {"titre": "Maîtriser l’IA pour Votre Classe : Le guide pratique du prompting", "url": "https://www.youtube.com/watch?v=YxdhDd8auos"},
+    {"titre": "Canva Éducation : le guide complet pour enseignants", "url": "https://www.youtube.com/watch?v=gAJaYs6QnJc"}
+]
+
