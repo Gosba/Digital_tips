@@ -2,8 +2,8 @@ import logging, json, os, hashlib, feedparser, pytz
 import google.generativeai as genai
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
-from config import BOT_TOKEN_DT, NEWS_SOURCES, GEMINI_API_KEY, YOUTUBE_CHANNELS, RESSOURCES_PEDAGO
-from data_tips import TOOLS, LEGISTLATION, ROLES_TIPS
+from config import BOT_TOKEN_DT, NEWS_SOURCES, GEMINI_API_KEY, RESSOURCES_PEDAGO
+from data_tips import TOOLS, LEGISTLATION
 from datetime import time, datetime, timedelta
 
 # --- LOGS ET INIT ---
@@ -107,104 +107,21 @@ async def news_handler(update, context):
         await msg.reply_text("🕵️‍♂️ Aucune news fraîche (-48h) n'a passé le filtre IA aujourd'hui.")
 
 async def pepites_handler(update, context):
-    """Menu principal des Pépites Pédago."""
+    """Menu principal des Pépites Pédago (Centre de Ressources IA uniquement)."""
     is_cb = update.callback_query is not None
     msg = update.callback_query.message if is_cb else update.message
-    kb = [
-        [InlineKeyboardButton("👔 Conseils par métier", callback_data="pepites_roles")],
-        [InlineKeyboardButton("🎥 Vidéos de Veille (YouTube)", callback_data="pepites_videos")],
-        [InlineKeyboardButton("📘 Guides, Fiches & Outils IA", callback_data="pepites_resources")]
-    ]
-    t = "💼 <b>Pépites Pédago</b>\n\nAccédez aux meilleures ressources sélectionnées par IA :"
+    kb = [[InlineKeyboardButton(cat, callback_data=f"rescat_{cat}")] for cat in RESSOURCES_PEDAGO.keys()]
+    t = "💼 <b>Pépites Pédago : Centre de Ressources IA</b>\n\nSélectionnez une catégorie de ressources premium :"
     if is_cb: await msg.edit_text(t, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(kb))
     else: await msg.reply_html(t, reply_markup=InlineKeyboardMarkup(kb))
-
-async def resource_menu_handler(update, context):
-    """Menu du centre de ressources IA (catégories statiques)."""
-    q = update.callback_query; await q.answer()
-    kb = [[InlineKeyboardButton(cat, callback_data=f"rescat_{cat}")] for cat in RESSOURCES_PEDAGO.keys()]
-    kb.append([InlineKeyboardButton("⬅️ Retour", callback_data="pepites_back")])
-    await q.edit_message_text("📘 <b>Centre de Ressources IA</b>\nSélectionnez une catégorie :", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(kb))
 
 async def resource_category_callback(update, context):
     """Affiche les ressources d'une catégorie spécifique."""
     q = update.callback_query; await q.answer(); cat = q.data.replace("rescat_", "")
     items = RESSOURCES_PEDAGO.get(cat, [])
     m = f"✨ <b>{cat}</b>\n\n" + "\n".join([f"🔹 {i['titre']}\n🔗 <a href='{i['url']}'>Accéder</a>\n" for i in items])
-    kb = [[InlineKeyboardButton("⬅️ Retour", callback_data="pepites_resources")]]
-    await q.edit_message_text(m, parse_mode="HTML", disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup(kb))
-
-async def videos_handler(update, context):
-    """Récupère les dernières vidéos YouTube (< 6 mois) validées par l'IA."""
-    q = update.callback_query; await q.answer()
-    await q.message.reply_chat_action("typing")
-    
-    all_videos = []
-    now = datetime.now(pytz.UTC)
-    threshold = now - timedelta(days=180) # ~ 6 mois
-
-    logger.info("🎬 [VIDEOS] Lancement du scan YouTube")
-    for s in YOUTUBE_CHANNELS:
-        try:
-            feed = feedparser.parse(s["url"])
-            count_v = 0
-            for e in feed.entries:
-                pub = datetime(*e.published_parsed[:6], tzinfo=pytz.UTC)
-                if pub < threshold: continue
-                
-                # Validation IA (plus large que les news)
-                prompt = f"Analyse ce titre de vidéo YouTube : '{e.title}'. Traite-t-il de pédagogie, d'éducation, de numérique ou d'intelligence artificielle ? Répond par OUI ou NON."
-                res = model.generate_content(prompt).text.strip().upper()
-                
-                if "OUI" in res:
-                    all_videos.append({
-                        "title": e.title,
-                        "link": e.link,
-                        "source": s["nom"],
-                        "date": pub
-                    })
-                    count_v += 1
-            logger.info(f"✅ [VIDEOS] {count_v} vidéos trouvées sur {s['nom']}")
-        except Exception as ex:
-            logger.error(f"❌ [VIDEOS] Erreur sur {s['nom']}: {ex}")
-
-    all_videos.sort(key=lambda x: x["date"], reverse=True)
-    
-    if not all_videos:
-        await q.message.reply_text("🕵️‍♂️ Aucune vidéo fraîche (insérée depuis < 6 mois) n'est disponible pour le moment.")
-        return
-
-    for v in all_videos[:5]:
-        d_str = v["date"].strftime("%d/%m/%Y")
-        t = f"📺 <b>{v['source']}</b> ({d_str})\n🔹 <a href='{v['link']}'>{v['title']}</a>"
-        await q.message.reply_html(t)
-
     kb = [[InlineKeyboardButton("⬅️ Retour", callback_data="pepites_back")]]
-    await q.message.reply_text("--- Fin des pépites vidéos ---", reply_markup=InlineKeyboardMarkup(kb))
-
-# --- NAVIGATION FLUIDE (EDIT MESSAGE) ---
-async def roles_handler(update, context):
-    is_cb = update.callback_query is not None
-    msg = update.callback_query.message if is_cb else update.message
-    kb = [[InlineKeyboardButton(r, callback_data=f"role_{r}")] for r in ROLES_TIPS.keys()]
-    kb.append([InlineKeyboardButton("⬅️ Retour", callback_data="pepites_back")]) # Ajout Retour
-    t = "👔 <b>Conseils par métier :</b>"
-    if is_cb: await msg.edit_text(t, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(kb))
-    else: await msg.reply_html(t, reply_markup=InlineKeyboardMarkup(kb))
-
-async def tools_handler(update, context):
-    is_cb = update.callback_query is not None
-    msg = update.callback_query.message if is_cb else update.message
-    kb = [[InlineKeyboardButton(cat, callback_data=f"cat_{cat}")] for cat in TOOLS.keys()]
-    t = "🛠️ <b>Outils IA Gratuits :</b>"
-    if is_cb: await msg.edit_text(t, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(kb))
-    else: await msg.reply_html(t, reply_markup=InlineKeyboardMarkup(kb))
-
-async def role_callback(update, context):
-    q = update.callback_query; await q.answer(); rn = q.data.replace("role_", "")
-    if rn == "back": return await roles_handler(update, context)
-    kb = [[InlineKeyboardButton("⬅️ Retour", callback_data="role_back")]]
-    await q.edit_message_text(f"👔 <b>{rn} :</b>\n\n{ROLES_TIPS.get(rn, '...')}", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(kb))
+    await q.edit_message_text(m, parse_mode="HTML", disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup(kb))
 
 async def category_callback(update, context):
     q = update.callback_query; await q.answer(); cn = q.data.replace("cat_", "")
@@ -240,18 +157,13 @@ def main():
     app.add_handler(MessageHandler(filters.Regex("^❓ À propos"), lambda u,c: u.message.reply_html("💡 <b>Digital Tips</b>\nContact: @digital_tips_coach")))
     
     app.add_handler(CallbackQueryHandler(category_callback, pattern="^cat_"))
-    app.add_handler(CallbackQueryHandler(role_callback, pattern="^role_"))
     
     # Callback Pépites
-    app.add_handler(CallbackQueryHandler(lambda u,c: roles_handler(u,c), pattern="^pepites_roles$"))
-    app.add_handler(CallbackQueryHandler(videos_handler, pattern="^pepites_videos$"))
-    app.add_handler(CallbackQueryHandler(resource_menu_handler, pattern="^pepites_resources$"))
     app.add_handler(CallbackQueryHandler(resource_category_callback, pattern="^rescat_"))
     app.add_handler(CallbackQueryHandler(pepites_handler, pattern="^pepites_back$"))
     
     # Correction Back Buttons Outils
     app.add_handler(CallbackQueryHandler(lambda u,c: tools_handler(u,c), pattern="^cat_back"))
-    app.add_handler(CallbackQueryHandler(lambda u,c: roles_handler(u,c), pattern="^role_back"))
     
     print("🚀 --- BOT DIGITAL TIPS V2 (FILTRE IA LASER) PRÊT ! ---")
     logger.info("🤖 Bot démarré avec la logique de fraîcheur 48h.")
